@@ -7,8 +7,6 @@ from .serializers import UserSerializer, UpdateUserPasswordSerializer
 from django.shortcuts import get_object_or_404
 
 
-# Create your views here.
-
 
 class RegisterAPI(APIView):
     def post(self, request):
@@ -18,6 +16,18 @@ class RegisterAPI(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+
+class LoginAPI(APIView):
+    def post(self, request):
+        email = request.data.get('email')
+        password = request.data.get('password')
+        user = User.objects.filter(email=email, password=password).first()
+        if user:
+            serializer = UserSerializer(user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response({"message": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
 
 
 

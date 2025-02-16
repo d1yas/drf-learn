@@ -41,8 +41,15 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'UserApp',
     'rest_framework',
+    'drf_spectacular',
+    'drf_spectacular_sidecar',
 
 ]
+
+REST_FRAMEWORK = {
+    # YOUR SETTINGS
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -105,7 +112,12 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
+SPECTACULAR_SETTINGS = {
+    'SWAGGER_UI_DIST': 'SIDECAR',  # shorthand to use the sidecar instead
+    'SWAGGER_UI_FAVICON_HREF': 'SIDECAR',
+    'REDOC_DIST': 'SIDECAR',
+    # OTHER SETTINGS
+}
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
