@@ -5,8 +5,11 @@ from rest_framework import status
 from .models import User
 from .serializers import UserSerializer, UpdateUserPasswordSerializer
 from django.shortcuts import get_object_or_404
-
-
+from rest_framework import status
+from rest_framework.generics import ListAPIView
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated, IsAdminUser
+# from permissions import IsAuthorOrReadOnly
+from .throttles import CustomRateThrottle
 
 class RegisterAPI(APIView):
     def post(self, request):
@@ -31,11 +34,6 @@ class LoginAPI(APIView):
 
 
 
-class AllUsersAPI(APIView):
-    def get(self, request):
-        people = User.objects.all()
-        serializer = UserSerializer(people, many=True)
-        return Response(serializer.data)
 
 
 
@@ -47,6 +45,7 @@ class UserIdAPI(APIView):
 
 
 class UpdateUserPasswordAPI(APIView):
+    permission_classes = [IsAuthenticatedOrReadOnly,]
     serializer_class = UpdateUserPasswordSerializer
     def put(self, request):
         username = request.data.get('username')
@@ -58,3 +57,36 @@ class UpdateUserPasswordAPI(APIView):
         else:
             return Response({"message": "Invalid username or password"}, status=status.HTTP_400_BAD_REQUEST)
 
+class ListUsersAPI(ListAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    
+
+
+class AllUsersAPI(APIView):
+    def get(self, request):
+        queryset = User.objects.all()
+        serializer = UserSerializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+
+
+# class DeleteUserAPI(APIView):
+#     def delete(self,request, id):
+#         try:
+#             queryset = User.objects.get(id=id)
+#             queryset.delete()
+#             return Response({"message":"user  delete succesfully"}, status=204)
+#         except User.DoesNotExist:
+#             return Response({"error":"User not found"}, status=404)
+
+class DeleteUserAPI(APIView):
+    permission_classes = [IsAuthenticated,]
+    # throttle_classes = [CustomRateThrottle]
+
+    def delete(self, request, id):
+        queryset = User.objects.filter(id=id).first()
+        if not queryset:
+            return Response({"error":"User not found"},status=404)
+        queryset.delete()
+        return Response({"message":f"User deleted succesfully: {id}"},status=200)
